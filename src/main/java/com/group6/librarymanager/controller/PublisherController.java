@@ -39,8 +39,10 @@ public class PublisherController {
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Integer id, Model model) {
-        Publisher publisher = publisherDAO.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Publisher not found: " + id));
+        Publisher publisher = publisherDAO.findById(id);
+        if (publisher == null) {
+            throw new IllegalArgumentException("Publisher not found: " + id);
+        }
         model.addAttribute("publisher", publisher);
         return "publishers/form";
     }

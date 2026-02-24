@@ -1,119 +1,111 @@
 package com.group6.librarymanager.model.dao;
 
-import com.group6.librarymanager.config.DBConnection;
 import com.group6.librarymanager.model.entity.Category;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Repository
-public class CategoryDAOImpl extends DBConnection {
-    private static final Logger LOGGER = Logger.getLogger(CategoryDAOImpl.class.getName());
+public class CategoryDAOImpl extends DBContext {
 
     public List<Category> findAll() {
-        List<Category> categories = new ArrayList<>();
+        List<Category> list = new ArrayList<>();
         String sql = "SELECT CategoryID, CategoryName FROM Category ORDER BY CategoryName";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql);
-             ResultSet rs = st.executeQuery()) {
-            
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Category category = new Category();
-                category.setCategoryId(rs.getInt("CategoryID"));
-                category.setCategoryName(rs.getString("CategoryName"));
-                categories.add(category);
+                Category c = new Category();
+                c.setCategoryId(rs.getInt("CategoryID"));
+                c.setCategoryName(rs.getString("CategoryName"));
+                list.add(c);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching all categories", e);
+            e.printStackTrace();
         }
-        
-        return categories;
+        return list;
     }
 
     public Category findById(Integer id) {
         String sql = "SELECT CategoryID, CategoryName FROM Category WHERE CategoryID = ?";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql)) {
-            st.setInt(1, id);
-            
-            try (ResultSet rs = st.executeQuery()) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Category category = new Category();
-                    category.setCategoryId(rs.getInt("CategoryID"));
-                    category.setCategoryName(rs.getString("CategoryName"));
-                    return category;
+                    Category c = new Category();
+                    c.setCategoryId(rs.getInt("CategoryID"));
+                    c.setCategoryName(rs.getString("CategoryName"));
+                    return c;
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching category with ID: " + id, e);
+            e.printStackTrace();
         }
-        
         return null;
     }
 
-    public Category save(Category category) {
-        if (category.getCategoryId() == null) {
-            return insert(category);
-        } else {
-            return update(category);
-        }
-    }
-
-    private Category insert(Category category) {
+    public void insert(Category c) {
         String sql = "INSERT INTO Category (CategoryName) VALUES (?)";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setString(1, category.getCategoryName());
-            
-            int affectedRows = st.executeUpdate();
-            
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = st.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        category.setCategoryId(generatedKeys.getInt(1));
-                    }
-                }
-            }
-            
-            return category;
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getCategoryName());
+            ps.executeUpdate();
+            System.out.println("Inserted category: " + c.getCategoryName());
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error inserting category", e);
+            e.printStackTrace();
         }
-        
-        return null;
     }
 
-    private Category update(Category category) {
+    public void update(Category c) {
         String sql = "UPDATE Category SET CategoryName = ? WHERE CategoryID = ?";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql)) {
-            st.setString(1, category.getCategoryName());
-            st.setInt(2, category.getCategoryId());
-            
-            st.executeUpdate();
-            return category;
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, c.getCategoryName());
+            ps.setInt(2, c.getCategoryId());
+            ps.executeUpdate();
+            System.out.println("Updated category ID: " + c.getCategoryId());
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error updating category", e);
+            e.printStackTrace();
         }
-        
-        return null;
     }
 
     public void deleteById(Integer id) {
         String sql = "DELETE FROM Category WHERE CategoryID = ?";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql)) {
-            st.setInt(1, id);
-            st.executeUpdate();
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            System.out.println("Deleted category ID: " + id);
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error deleting category with ID: " + id, e);
+            e.printStackTrace();
+        }
+    }
+
+    public Category save(Category c) {
+        if (c.getCategoryId() == null) {
+            insert(c);
+        } else {
+            update(c);
+        }
+        return c;
+    }
+
+    public static void main(String[] args) {
+        CategoryDAOImpl dao = new CategoryDAOImpl();
+
+        // --- Insert ---
+        Category c = new Category();
+        c.setCategoryName("The loai Test");
+        dao.insert(c);
+
+        // --- View all ---
+        System.out.println("=== All Categories ===");
+        List<Category> list = dao.findAll();
+        for (Category cat : list) {
+            System.out.println(cat.getCategoryId() + " - " + cat.getCategoryName());
         }
     }
 }

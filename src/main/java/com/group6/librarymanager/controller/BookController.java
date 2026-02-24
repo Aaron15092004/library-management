@@ -37,8 +37,10 @@ public class BookController {
     // GET /books/{id} — view detail
     @GetMapping("/{id}")
     public String detail(@PathVariable Integer id, Model model) {
-        Book book = bookDAO.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found: " + id));
+        Book book = bookDAO.findById(id);
+        if (book == null) {
+            throw new IllegalArgumentException("Book not found: " + id);
+        }
         model.addAttribute("book", book);
         return "books/detail";
     }
@@ -62,12 +64,12 @@ public class BookController {
             model.addAttribute("authors", authorDAO.findAll());
             return "books/form";
         }
-        
+
         // Set available = quantity if not set
         if (book.getAvailable() == null) {
             book.setAvailable(book.getQuantity());
         }
-        
+
         bookDAO.save(book);
         return "redirect:/books";
     }
@@ -75,8 +77,10 @@ public class BookController {
     // GET /books/{id}/edit — show edit form
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Integer id, Model model) {
-        Book book = bookDAO.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found: " + id));
+        Book book = bookDAO.findById(id);
+        if (book == null) {
+            throw new IllegalArgumentException("Book not found: " + id);
+        }
         model.addAttribute("book", book);
         model.addAttribute("categories", categoryDAO.findAll());
         model.addAttribute("publishers", publisherDAO.findAll());

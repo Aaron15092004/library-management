@@ -1,119 +1,111 @@
 package com.group6.librarymanager.model.dao;
 
-import com.group6.librarymanager.config.DBConnection;
 import com.group6.librarymanager.model.entity.Publisher;
 import org.springframework.stereotype.Repository;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @Repository
-public class PublisherDAOImpl extends DBConnection {
-    private static final Logger LOGGER = Logger.getLogger(PublisherDAOImpl.class.getName());
+public class PublisherDAOImpl extends DBContext {
 
     public List<Publisher> findAll() {
-        List<Publisher> publishers = new ArrayList<>();
+        List<Publisher> list = new ArrayList<>();
         String sql = "SELECT PublisherID, PublisherName FROM Publisher ORDER BY PublisherName";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql);
-             ResultSet rs = st.executeQuery()) {
-            
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Publisher publisher = new Publisher();
-                publisher.setPublisherId(rs.getInt("PublisherID"));
-                publisher.setPublisherName(rs.getString("PublisherName"));
-                publishers.add(publisher);
+                Publisher p = new Publisher();
+                p.setPublisherId(rs.getInt("PublisherID"));
+                p.setPublisherName(rs.getString("PublisherName"));
+                list.add(p);
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching all publishers", e);
+            e.printStackTrace();
         }
-        
-        return publishers;
+        return list;
     }
 
     public Publisher findById(Integer id) {
         String sql = "SELECT PublisherID, PublisherName FROM Publisher WHERE PublisherID = ?";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql)) {
-            st.setInt(1, id);
-            
-            try (ResultSet rs = st.executeQuery()) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Publisher publisher = new Publisher();
-                    publisher.setPublisherId(rs.getInt("PublisherID"));
-                    publisher.setPublisherName(rs.getString("PublisherName"));
-                    return publisher;
+                    Publisher p = new Publisher();
+                    p.setPublisherId(rs.getInt("PublisherID"));
+                    p.setPublisherName(rs.getString("PublisherName"));
+                    return p;
                 }
             }
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error fetching publisher with ID: " + id, e);
+            e.printStackTrace();
         }
-        
         return null;
     }
 
-    public Publisher save(Publisher publisher) {
-        if (publisher.getPublisherId() == null) {
-            return insert(publisher);
-        } else {
-            return update(publisher);
-        }
-    }
-
-    private Publisher insert(Publisher publisher) {
+    public void insert(Publisher p) {
         String sql = "INSERT INTO Publisher (PublisherName) VALUES (?)";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            st.setString(1, publisher.getPublisherName());
-            
-            int affectedRows = st.executeUpdate();
-            
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = st.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        publisher.setPublisherId(generatedKeys.getInt(1));
-                    }
-                }
-            }
-            
-            return publisher;
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, p.getPublisherName());
+            ps.executeUpdate();
+            System.out.println("Inserted publisher: " + p.getPublisherName());
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error inserting publisher", e);
+            e.printStackTrace();
         }
-        
-        return null;
     }
 
-    private Publisher update(Publisher publisher) {
+    public void update(Publisher p) {
         String sql = "UPDATE Publisher SET PublisherName = ? WHERE PublisherID = ?";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql)) {
-            st.setString(1, publisher.getPublisherName());
-            st.setInt(2, publisher.getPublisherId());
-            
-            st.executeUpdate();
-            return publisher;
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, p.getPublisherName());
+            ps.setInt(2, p.getPublisherId());
+            ps.executeUpdate();
+            System.out.println("Updated publisher ID: " + p.getPublisherId());
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error updating publisher", e);
+            e.printStackTrace();
         }
-        
-        return null;
     }
 
     public void deleteById(Integer id) {
         String sql = "DELETE FROM Publisher WHERE PublisherID = ?";
-        
-        try (PreparedStatement st = getConnection().prepareStatement(sql)) {
-            st.setInt(1, id);
-            st.executeUpdate();
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            System.out.println("Deleted publisher ID: " + id);
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error deleting publisher with ID: " + id, e);
+            e.printStackTrace();
+        }
+    }
+
+    public Publisher save(Publisher p) {
+        if (p.getPublisherId() == null) {
+            insert(p);
+        } else {
+            update(p);
+        }
+        return p;
+    }
+
+    public static void main(String[] args) {
+        PublisherDAOImpl dao = new PublisherDAOImpl();
+
+        // --- Insert ---
+        Publisher p = new Publisher();
+        p.setPublisherName("NXB Test Main");
+        dao.insert(p);
+
+        // --- View all ---
+        System.out.println("=== All Publishers ===");
+        List<Publisher> list = dao.findAll();
+        for (Publisher pub : list) {
+            System.out.println(pub.getPublisherId() + " - " + pub.getPublisherName());
         }
     }
 }

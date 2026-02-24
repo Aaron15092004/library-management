@@ -1,7 +1,7 @@
 package com.group6.librarymanager.controller;
 
-import com.group6.librarymanager.model.dao.RoleDAO;
-import com.group6.librarymanager.model.dao.StaffDAO;
+import com.group6.librarymanager.model.dao.RoleDAOImpl;
+import com.group6.librarymanager.model.dao.StaffDAOImpl;
 import com.group6.librarymanager.model.entity.Staff;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StaffController {
 
-    private final StaffDAO staffDAO;
-    private final RoleDAO roleDAO;
+    private final StaffDAOImpl staffDAO;
+    private final RoleDAOImpl roleDAO;
 
     @GetMapping
     public String list(Model model) {
@@ -43,8 +43,10 @@ public class StaffController {
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Integer id, Model model) {
-        Staff staff = staffDAO.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Staff not found: " + id));
+        Staff staff = staffDAO.findById(id);
+        if (staff == null) {
+            throw new IllegalArgumentException("Staff not found: " + id);
+        }
         model.addAttribute("staff", staff);
         model.addAttribute("roles", roleDAO.findAll());
         return "staffs/form";

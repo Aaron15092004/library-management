@@ -1,6 +1,6 @@
 package com.group6.librarymanager.controller;
 
-import com.group6.librarymanager.model.dao.StudentDAO;
+import com.group6.librarymanager.model.dao.StudentDAOImpl;
 import com.group6.librarymanager.model.entity.Student;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StudentController {
 
-    private final StudentDAO studentDAO;
+    private final StudentDAOImpl studentDAO;
 
     @GetMapping
     public String list(Model model) {
@@ -38,8 +38,10 @@ public class StudentController {
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Integer id, Model model) {
-        Student student = studentDAO.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found: " + id));
+        Student student = studentDAO.findById(id);
+        if (student == null) {
+            throw new IllegalArgumentException("Student not found: " + id);
+        }
         model.addAttribute("student", student);
         return "students/form";
     }

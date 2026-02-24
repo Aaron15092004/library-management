@@ -38,8 +38,10 @@ public class CategoryController {
 
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Integer id, Model model) {
-        Category category = categoryDAO.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found: " + id));
+        Category category = categoryDAO.findById(id);
+        if (category == null) {
+            throw new IllegalArgumentException("Category not found: " + id);
+        }
         model.addAttribute("category", category);
         return "categories/form";
     }

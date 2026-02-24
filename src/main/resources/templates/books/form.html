@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm/Sửa Sách</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-container { max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-sizing: border-box;
+        }
+        .error { color: red; font-size: 0.9em; }
+        .btn { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary { background-color: #4CAF50; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-primary:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1 th:text="${book.bookId == null ? 'Thêm Sách Mới' : 'Sửa Sách'}">Thêm Sách Mới</h1>
+        
+        <form th:action="${book.bookId == null ? '/books' : '/books/' + book.bookId + '/edit'}" 
+              th:object="${book}" 
+              method="post">
+            
+            <div class="form-group">
+                <label for="bookName">Tên sách: *</label>
+                <input type="text" id="bookName" th:field="*{bookName}" required />
+                <span class="error" th:if="${#fields.hasErrors('bookName')}" th:errors="*{bookName}"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="quantity">Số lượng: *</label>
+                <input type="number" id="quantity" th:field="*{quantity}" min="0" required />
+                <span class="error" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="available">Có sẵn: *</label>
+                <input type="number" id="available" th:field="*{available}" min="0" required />
+                <span class="error" th:if="${#fields.hasErrors('available')}" th:errors="*{available}"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Danh mục: *</label>
+                <select id="category" th:field="*{category.categoryId}" required>
+                    <option value="">-- Chọn danh mục --</option>
+                    <option th:each="cat : ${categories}" 
+                            th:value="${cat.categoryId}" 
+                            th:text="${cat.categoryName}"></option>
+                </select>
+                <span class="error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></span>
+            </div>
+            
+            <div class="form-group">
+                <label for="publisher">Nhà xuất bản: *</label>
+                <select id="publisher" th:field="*{publisher.publisherId}" required>
+                    <option value="">-- Chọn nhà xuất bản --</option>
+                    <option th:each="pub : ${publishers}" 
+                            th:value="${pub.publisherId}" 
+                            th:text="${pub.publisherName}"></option>
+                </select>
+                <span class="error" th:if="${#fields.hasErrors('publisher')}" th:errors="*{publisher}"></span>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <span th:text="${book.bookId == null ? 'Thêm mới' : 'Cập nhật'}">Thêm mới</span>
+                </button>
+                <a href="/books" class="btn btn-secondary">Hủy</a>
+            </div>
+        </form>
+        
+        <div th:if="${categories.isEmpty() || publishers.isEmpty()}" style="margin-top: 20px; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107;">
+            <strong>⚠️ Cảnh báo:</strong>
+            <p th:if="${categories.isEmpty()}">Chưa có danh mục nào. <a href="/categories/new">Thêm danh mục</a></p>
+            <p th:if="${publishers.isEmpty()}">Chưa có nhà xuất bản nào. Vui lòng thêm nhà xuất bản trước.</p>
+        </div>
+    </div>
+</body>
+</html>

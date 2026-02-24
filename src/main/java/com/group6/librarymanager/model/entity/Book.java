@@ -31,11 +31,11 @@ public class Book {
     @Column(name = "Available", nullable = false)
     private Integer available;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "CategoryID", nullable = false)
     private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "PublisherID", nullable = false)
     private Publisher publisher;
 

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Nhà xuất bản</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        .btn { padding: 8px 16px; margin: 5px; text-decoration: none; color: white; border-radius: 4px; display: inline-block; border: none; cursor: pointer; }
+        .btn-primary { background-color: #4CAF50; }
+        .btn-danger { background-color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>Quản lý Nhà xuất bản</h1>
+    <a href="/" class="btn btn-primary">← Trang chủ</a>
+    <a href="/publishers/new" class="btn btn-primary">+ Thêm nhà xuất bản</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên nhà xuất bản</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="pub : ${publishers}">
+                <td th:text="${pub.publisherId}"></td>
+                <td th:text="${pub.publisherName}"></td>
+                <td>
+                    <a th:href="@{/publishers/{id}/edit(id=${pub.publisherId})}" class="btn btn-primary">Sửa</a>
+                    <form th:action="@{/publishers/{id}/delete(id=${pub.publisherId})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Xóa?')">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${publishers.isEmpty()}">
+                <td colspan="3" style="text-align: center;">Chưa có nhà xuất bản nào</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

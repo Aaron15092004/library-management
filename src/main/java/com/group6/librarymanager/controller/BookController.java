@@ -1,9 +1,9 @@
 package com.group6.librarymanager.controller;
 
 import com.group6.librarymanager.model.dao.AuthorDAO;
-import com.group6.librarymanager.model.dao.BookDAO;
-import com.group6.librarymanager.model.dao.CategoryDAO;
-import com.group6.librarymanager.model.dao.PublisherDAO;
+import com.group6.librarymanager.model.dao.BookDAOImpl;
+import com.group6.librarymanager.model.dao.CategoryDAOImpl;
+import com.group6.librarymanager.model.dao.PublisherDAOImpl;
 import com.group6.librarymanager.model.entity.Book;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,16 +17,21 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class BookController {
 
-    private final BookDAO bookDAO;
-    private final CategoryDAO categoryDAO;
-    private final PublisherDAO publisherDAO;
+    private final BookDAOImpl bookDAO;
+    private final CategoryDAOImpl categoryDAO;
+    private final PublisherDAOImpl publisherDAO;
     private final AuthorDAO authorDAO;
 
     // GET /books — list all books
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("books", bookDAO.findAll());
-        return "books/list";
+        try {
+            model.addAttribute("books", bookDAO.findAll());
+            return "books/list";
+        } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
+            return "error";
+        }
     }
 
     // GET /books/{id} — view detail
@@ -57,6 +62,12 @@ public class BookController {
             model.addAttribute("authors", authorDAO.findAll());
             return "books/form";
         }
+        
+        // Set available = quantity if not set
+        if (book.getAvailable() == null) {
+            book.setAvailable(book.getQuantity());
+        }
+        
         bookDAO.save(book);
         return "redirect:/books";
     }

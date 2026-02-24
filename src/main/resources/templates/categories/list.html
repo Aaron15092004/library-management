@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Danh mục</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        .btn { padding: 8px 16px; margin: 5px; text-decoration: none; color: white; border-radius: 4px; display: inline-block; }
+        .btn-primary { background-color: #4CAF50; }
+        .btn-danger { background-color: #f44336; }
+    </style>
+</head>
+<body>
+    <h1>Quản lý Danh mục</h1>
+    <a href="/" class="btn btn-primary">← Trang chủ</a>
+    <a href="/categories/new" class="btn btn-primary">+ Thêm danh mục</a>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên danh mục</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="cat : ${categories}">
+                <td th:text="${cat.categoryId}"></td>
+                <td th:text="${cat.categoryName}"></td>
+                <td>
+                    <a th:href="@{/categories/{id}/edit(id=${cat.categoryId})}" class="btn btn-primary">Sửa</a>
+                    <form th:action="@{/categories/{id}/delete(id=${cat.categoryId})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Xóa?')">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${categories.isEmpty()}">
+                <td colspan="3" style="text-align: center;">Chưa có danh mục nào</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

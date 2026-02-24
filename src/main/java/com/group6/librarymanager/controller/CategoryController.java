@@ -1,6 +1,6 @@
 package com.group6.librarymanager.controller;
 
-import com.group6.librarymanager.model.dao.CategoryDAO;
+import com.group6.librarymanager.model.dao.CategoryDAOImpl;
 import com.group6.librarymanager.model.entity.Category;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class CategoryController {
 
-    private final CategoryDAO categoryDAO;
+    private final CategoryDAOImpl categoryDAO;
 
     @GetMapping
     public String list(Model model) {

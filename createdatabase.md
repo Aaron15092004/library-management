@@ -150,6 +150,7 @@ StudentID INT NOT NULL,
 StaffID INT NOT NULL,
 BorrowDate DATE NOT NULL,
 DueDate DATE NOT NULL,
+ReturnDate DATE NULL,
 Status NVARCHAR(20) NOT NULL
 CHECK (Status IN ('Borrowing','Returned','Overdue')),
 

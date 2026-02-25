@@ -35,6 +35,9 @@ public class Borrow {
     @Column(name = "DueDate", nullable = false)
     private LocalDate dueDate;
 
+    @Column(name = "ReturnDate")
+    private LocalDate returnDate;
+
     @Column(name = "Status", nullable = false, length = 20)
     private String status; // Borrowing / Returned / Overdue
 

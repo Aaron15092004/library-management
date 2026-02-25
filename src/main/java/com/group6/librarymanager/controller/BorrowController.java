@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 
@@ -88,11 +89,17 @@ public class BorrowController {
     }
 
     @PostMapping("/{id}/return")
-    public String returnBooks(@PathVariable Integer id) {
+    public String returnBooks(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
         Borrow borrow = borrowDAO.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Borrow not found: " + id));
 
+        if ("Returned".equals(borrow.getStatus())) {
+            redirectAttributes.addFlashAttribute("error", "This record has already been returned.");
+            return "redirect:/borrows";
+        }
+
         borrow.setStatus("Returned");
+        borrow.setReturnDate(LocalDate.now());
         borrowDAO.save(borrow);
 
         borrow.getBorrowItems().forEach(item -> {

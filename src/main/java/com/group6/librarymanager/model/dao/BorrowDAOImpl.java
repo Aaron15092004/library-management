@@ -13,10 +13,12 @@ import java.util.List;
 @Repository
 public class BorrowDAOImpl extends DBContext {
 
+    private final BorrowItemDAOImpl borrowItemDAO = new BorrowItemDAOImpl();
+
     public List<Borrow> findAll() {
         List<Borrow> list = new ArrayList<>();
         String sql = "SELECT b.BorrowID, b.StudentID, s.StudentName, b.StaffID, st.StaffName, " +
-                "b.BorrowDate, b.DueDate, b.Status " +
+                "b.BorrowDate, b.DueDate, b.ReturnDate, b.Status " +
                 "FROM Borrow b " +
                 "LEFT JOIN Student s ON b.StudentID = s.StudentID " +
                 "LEFT JOIN Staff st ON b.StaffID = st.StaffID " +
@@ -35,7 +37,7 @@ public class BorrowDAOImpl extends DBContext {
 
     public Borrow findById(Integer id) {
         String sql = "SELECT b.BorrowID, b.StudentID, s.StudentName, b.StaffID, st.StaffName, " +
-                "b.BorrowDate, b.DueDate, b.Status " +
+                "b.BorrowDate, b.DueDate, b.ReturnDate, b.Status " +
                 "FROM Borrow b " +
                 "LEFT JOIN Student s ON b.StudentID = s.StudentID " +
                 "LEFT JOIN Staff st ON b.StaffID = st.StaffID " +
@@ -45,7 +47,9 @@ public class BorrowDAOImpl extends DBContext {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapRow(rs);
+                    Borrow borrow = mapRow(rs);
+                    borrow.setBorrowItems(borrowItemDAO.findByBorrowId(id));
+                    return borrow;
                 }
             }
         } catch (SQLException e) {
@@ -71,19 +75,22 @@ public class BorrowDAOImpl extends DBContext {
         b.setBorrowDate(bd != null ? bd.toLocalDate() : null);
         Date dd = rs.getDate("DueDate");
         b.setDueDate(dd != null ? dd.toLocalDate() : null);
+        Date rd = rs.getDate("ReturnDate");
+        b.setReturnDate(rd != null ? rd.toLocalDate() : null);
         b.setStatus(rs.getString("Status"));
         return b;
     }
 
     public void insert(Borrow b) {
-        String sql = "INSERT INTO Borrow (StudentID, StaffID, BorrowDate, DueDate, Status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Borrow (StudentID, StaffID, BorrowDate, DueDate, ReturnDate, Status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, b.getStudent().getStudentId());
             ps.setInt(2, b.getStaff().getStaffId());
             ps.setDate(3, Date.valueOf(b.getBorrowDate()));
             ps.setDate(4, Date.valueOf(b.getDueDate()));
-            ps.setString(5, b.getStatus());
+            ps.setDate(5, b.getReturnDate() != null ? Date.valueOf(b.getReturnDate()) : null);
+            ps.setString(6, b.getStatus());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
@@ -97,15 +104,16 @@ public class BorrowDAOImpl extends DBContext {
     }
 
     public void update(Borrow b) {
-        String sql = "UPDATE Borrow SET StudentID = ?, StaffID = ?, BorrowDate = ?, DueDate = ?, Status = ? WHERE BorrowID = ?";
+        String sql = "UPDATE Borrow SET StudentID = ?, StaffID = ?, BorrowDate = ?, DueDate = ?, ReturnDate = ?, Status = ? WHERE BorrowID = ?";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, b.getStudent().getStudentId());
             ps.setInt(2, b.getStaff().getStaffId());
             ps.setDate(3, Date.valueOf(b.getBorrowDate()));
             ps.setDate(4, Date.valueOf(b.getDueDate()));
-            ps.setString(5, b.getStatus());
-            ps.setInt(6, b.getBorrowId());
+            ps.setDate(5, b.getReturnDate() != null ? Date.valueOf(b.getReturnDate()) : null);
+            ps.setString(6, b.getStatus());
+            ps.setInt(7, b.getBorrowId());
             ps.executeUpdate();
             System.out.println("Updated borrow ID: " + b.getBorrowId());
         } catch (SQLException e) {

@@ -14,7 +14,7 @@ public class BorrowItemDAOImpl extends DBContext {
 
     public List<BorrowItem> findAll() {
         List<BorrowItem> list = new ArrayList<>();
-        String sql = "SELECT bi.BorrowID, bi.BookID, b.BookName, bi.Quantity " +
+        String sql = "SELECT bi.BorrowID, bi.BookID, b.BookName, b.Available, bi.Quantity " +
                 "FROM BorrowItem bi " +
                 "LEFT JOIN Book b ON bi.BookID = b.BookID";
         try (Connection conn = getConnection();
@@ -31,7 +31,7 @@ public class BorrowItemDAOImpl extends DBContext {
 
     public List<BorrowItem> findByBorrowId(Integer borrowId) {
         List<BorrowItem> list = new ArrayList<>();
-        String sql = "SELECT bi.BorrowID, bi.BookID, b.BookName, bi.Quantity " +
+        String sql = "SELECT bi.BorrowID, bi.BookID, b.BookName, b.Available, bi.Quantity " +
                 "FROM BorrowItem bi " +
                 "LEFT JOIN Book b ON bi.BookID = b.BookID " +
                 "WHERE bi.BorrowID = ?";
@@ -53,6 +53,7 @@ public class BorrowItemDAOImpl extends DBContext {
         Book book = new Book();
         book.setBookId(rs.getInt("BookID"));
         book.setBookName(rs.getString("BookName"));
+        book.setAvailable(rs.getInt("Available"));
 
         BorrowItem bi = new BorrowItem();
         bi.setId(new BorrowItemId(rs.getInt("BorrowID"), rs.getInt("BookID")));

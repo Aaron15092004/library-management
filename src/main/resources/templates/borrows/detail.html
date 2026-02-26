@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết phiếu mượn</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #2196f3; color: #fff; }
+        .btn { padding: 8px 12px; text-decoration: none; border-radius: 4px; color: #fff; border: none; cursor: pointer; }
+        .btn-secondary { background-color: #607d8b; }
+    </style>
+</head>
+<body>
+<h1>Chi tiết phiếu mượn #<span th:text="${borrow.borrowId}"></span></h1>
+
+<p><b>Sinh viên:</b> <span th:text="${borrow.student != null ? borrow.student.studentName : ''}"></span></p>
+<p><b>Nhân viên:</b> <span th:text="${borrow.staff != null ? borrow.staff.staffName : ''}"></span></p>
+<p><b>Ngày mượn:</b> <span th:text="${borrow.borrowDate}"></span></p>
+<p><b>Hạn trả:</b> <span th:text="${borrow.dueDate}"></span></p>
+<p><b>Ngày trả:</b> <span th:text="${borrow.returnDate}"></span></p>
+<p><b>Trạng thái:</b> <span th:text="${borrow.status}"></span></p>
+
+<h3>Danh sách sách mượn</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Book ID</th>
+        <th>Tên sách</th>
+        <th>Số lượng</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${borrow.borrowItems}">
+        <td th:text="${item.book != null ? item.book.bookId : ''}"></td>
+        <td th:text="${item.book != null ? item.book.bookName : ''}"></td>
+        <td th:text="${item.quantity}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<br />
+<a href="/borrows" class="btn btn-secondary">Quay lại</a>
+</body>
+</html>

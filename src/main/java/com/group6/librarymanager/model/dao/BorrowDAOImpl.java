@@ -89,7 +89,11 @@ public class BorrowDAOImpl extends DBContext {
             ps.setInt(2, b.getStaff().getStaffId());
             ps.setDate(3, Date.valueOf(b.getBorrowDate()));
             ps.setDate(4, Date.valueOf(b.getDueDate()));
-            ps.setDate(5, b.getReturnDate() != null ? Date.valueOf(b.getReturnDate()) : null);
+            if (b.getReturnDate() != null) {
+                ps.setDate(5, Date.valueOf(b.getReturnDate()));
+            } else {
+                ps.setNull(5, Types.DATE);
+            }
             ps.setString(6, b.getStatus());
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
@@ -99,7 +103,7 @@ public class BorrowDAOImpl extends DBContext {
             }
             System.out.println("Inserted borrow ID: " + b.getBorrowId());
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Insert borrow failed", e);
         }
     }
 
@@ -111,13 +115,17 @@ public class BorrowDAOImpl extends DBContext {
             ps.setInt(2, b.getStaff().getStaffId());
             ps.setDate(3, Date.valueOf(b.getBorrowDate()));
             ps.setDate(4, Date.valueOf(b.getDueDate()));
-            ps.setDate(5, b.getReturnDate() != null ? Date.valueOf(b.getReturnDate()) : null);
+            if (b.getReturnDate() != null) {
+                ps.setDate(5, Date.valueOf(b.getReturnDate()));
+            } else {
+                ps.setNull(5, Types.DATE);
+            }
             ps.setString(6, b.getStatus());
             ps.setInt(7, b.getBorrowId());
             ps.executeUpdate();
             System.out.println("Updated borrow ID: " + b.getBorrowId());
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Update borrow failed", e);
         }
     }
 

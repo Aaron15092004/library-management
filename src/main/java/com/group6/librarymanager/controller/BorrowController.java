@@ -58,6 +58,23 @@ public class BorrowController {
             @RequestParam(name = "bookIds", required = false) Integer[] bookIds,
             @RequestParam(name = "quantities", required = false) Integer[] quantities,
             Model model) {
+        if (borrow.getStudent() == null || borrow.getStudent().getStudentId() == null) {
+            result.rejectValue("student", "borrow.student.required", "Vui lòng chọn sinh viên.");
+        }
+        if (borrow.getStaff() == null || borrow.getStaff().getStaffId() == null) {
+            result.rejectValue("staff", "borrow.staff.required", "Vui lòng chọn nhân viên.");
+        }
+        if (borrow.getBorrowDate() == null) {
+            result.rejectValue("borrowDate", "borrow.borrowDate.required", "Vui lòng chọn ngày mượn.");
+        }
+        if (borrow.getDueDate() == null) {
+            result.rejectValue("dueDate", "borrow.dueDate.required", "Vui lòng chọn hạn trả.");
+        }
+        if (borrow.getBorrowDate() != null && borrow.getDueDate() != null
+                && borrow.getDueDate().isBefore(borrow.getBorrowDate())) {
+            result.rejectValue("dueDate", "borrow.dueDate.invalid", "Hạn trả phải lớn hơn hoặc bằng ngày mượn.");
+        }
+
         if (result.hasErrors()) {
             model.addAttribute("students", studentDAO.findAll());
             model.addAttribute("staffs", staffDAO.findAll());
@@ -65,8 +82,20 @@ public class BorrowController {
             return "borrows/form";
         }
 
-        borrow.setStatus("Borrowing");
-        Borrow saved = borrowDAO.save(borrow);
+        Borrow saved;
+        try {
+            borrow.setStatus("Borrowing");
+            saved = borrowDAO.save(borrow);
+            if (saved.getBorrowId() == null) {
+                throw new IllegalStateException("Không tạo được phiếu mượn.");
+            }
+        } catch (Exception ex) {
+            model.addAttribute("formError", "Lưu phiếu mượn thất bại: " + ex.getMessage());
+            model.addAttribute("students", studentDAO.findAll());
+            model.addAttribute("staffs", staffDAO.findAll());
+            model.addAttribute("books", bookDAO.findByAvailableGreaterThan(0));
+            return "borrows/form";
+        }
 
         if (bookIds != null) {
             for (int i = 0; i < bookIds.length; i++) {
